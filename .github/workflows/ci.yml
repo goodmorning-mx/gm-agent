@@ -1,0 +1,26 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [dev, main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      # gm-mcp and gm-billing are private sibling modules. Their integration
+      # test runs in the release workspace; this job validates gm-agent's
+      # isolated package contract without requiring cross-repository secrets.
+      - run: pip install --no-deps .
+      - run: python -m compileall -q gm_agent
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: {run: {working-directory: frontend}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '20'}
+      - run: npm install
+      - run: npm run build
