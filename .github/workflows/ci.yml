@@ -1,0 +1,28 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [dev, main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {path: gm-agent}
+      - uses: actions/checkout@v4
+        with: {repository: goodmorning-mx/gm-mcp, ref: dev, path: gm-mcp}
+      - uses: actions/checkout@v4
+        with: {repository: goodmorning-mx/gm-billing, ref: dev, path: gm-billing}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install ./gm-mcp ./gm-billing ./gm-agent
+      - run: python -m unittest discover -s gm-agent/tests -q
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: {run: {working-directory: frontend}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '20'}
+      - run: npm install
+      - run: npm run build
