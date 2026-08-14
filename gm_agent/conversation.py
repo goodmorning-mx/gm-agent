@@ -17,6 +17,7 @@ class Message:
     content: str
     tool_call_id: str | None = None
     name: str | None = None
+    tool_calls: list[dict[str, Any]] | None = None
 
     def as_provider_message(self) -> dict[str, Any]:
         result: dict[str, Any] = {"role": self.role, "content": self.content}
@@ -24,6 +25,15 @@ class Message:
             result["tool_call_id"] = self.tool_call_id
         if self.name:
             result["name"] = self.name
+        if self.tool_calls:
+            result["tool_calls"] = [
+                {
+                    "id": call["id"],
+                    "type": "function",
+                    "function": {"name": call["name"], "arguments": call["arguments"]},
+                }
+                for call in self.tool_calls
+            ]
         return result
 
 
@@ -46,13 +56,18 @@ class AgentService:
     async def respond(self, *, conversation: Conversation, prompt: str, context: RequestContext, model: str) -> Message:
         conversation.messages.append(Message("user", prompt))
         for _ in range(8):
-            response = await self.provider.complete(model=model, messages=[m.as_provider_message() for m in conversation.messages], tools=self.registry.list())
+            tools = [
+                {"type": "function", "function": {"name": item["name"], "description": item["description"], "parameters": item["inputSchema"]}}
+                for item in self.registry.list()
+            ]
+            response = await self.provider.complete(model=model, messages=[m.as_provider_message() for m in conversation.messages], tools=tools)
             if self.billing:
                 self.billing.record_usage(product_id=context.product_id, organization_id=context.organization_id, user_id=context.user_id, provider=self.provider.name, model=model, input_tokens=response.input_tokens, output_tokens=response.output_tokens, cached_tokens=response.cached_tokens, request_id=context.request_id)
             if not response.tool_calls:
                 message = Message("assistant", response.content)
                 conversation.messages.append(message)
                 return message
+            conversation.messages.append(Message("assistant", response.content, tool_calls=response.tool_calls))
             for call in response.tool_calls:
                 arguments = json.loads(call["arguments"] or "{}")
                 tool_call = ToolCall(call["name"], arguments)

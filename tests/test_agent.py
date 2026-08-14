@@ -35,3 +35,11 @@ class AgentTests(unittest.TestCase):
         result = asyncio.run(service.respond(conversation=Conversation(), prompt="Busca Ana", context=RequestContext("u", "o", "p", frozenset({"read"})), model="test"))
         self.assertEqual(result.content, "Encontré a Ana.")
         self.assertEqual(len(billing.store.usage), 2)
+
+    def test_openai_tool_message_shape_is_preserved(self):
+        message = __import__("gm_agent.conversation", fromlist=["Message"]).Message(
+            "assistant", "", tool_calls=[{"id": "call", "name": "students.find", "arguments": "{}"}]
+        )
+        value = message.as_provider_message()
+        self.assertEqual(value["tool_calls"][0]["type"], "function")
+        self.assertEqual(value["tool_calls"][0]["function"]["name"], "students.find")
