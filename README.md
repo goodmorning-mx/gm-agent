@@ -15,3 +15,8 @@ shells can provide product branding without copying chat logic.
 pip install gm-agent
 cd frontend && npm install && npm run build
 ```
+
+The module contract declares `OPENAI_API_KEY` as a
+`GOODMORNING_MANAGED` backend secret through the
+`goodmorning/openai-default` binding. The value is resolved by GoodMorning
+Factory at deployment time and is never part of this package or its frontend.
