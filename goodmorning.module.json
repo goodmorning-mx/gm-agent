@@ -7,5 +7,24 @@
       "binding": "goodmorning/openai-default",
       "target": "backend"
     }
-  }
+  },
+  "kind": "full-stack",
+  "backend_package": "gm-agent",
+  "frontend_package": "@goodmorning/gm-agent",
+  "deployment_modes": ["embedded", "service", "gateway"],
+  "default_deployment_mode": "embedded",
+  "resource_requirements": [
+    {
+      "name": "agent-gateway",
+      "kind": "gateway",
+      "resource_name": "agent-gateway",
+      "deployment_modes": ["gateway"],
+      "base_directory": "/backend",
+      "dockerfile": "/Dockerfile",
+      "port": 8100,
+      "public": true,
+      "health_path": "/health"
+    }
+  ],
+  "bindings": []
 }
