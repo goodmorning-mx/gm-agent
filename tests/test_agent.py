@@ -5,7 +5,7 @@ from decimal import Decimal
 from gm_agent.conversation import AgentService, Conversation
 from gm_agent.providers import ProviderResponse
 from gm_billing import BillingService, InMemoryBillingStore, PricingRule
-from gm_mcp import RequestContext, ToolRegistry, tool
+from gm_mcp import Permission, RequestContext, ToolRegistry, tool
 
 
 class FakeProvider:
@@ -37,6 +37,30 @@ class ProviderRequiringSafeNames:
 
 
 class AgentTests(unittest.TestCase):
+    def test_write_preview_is_returned_as_structured_confirmation(self):
+        registry = ToolRegistry(intent_store=type("Store", (), {
+            "preview": lambda self, **kwargs: {"status": "pending", "intent_id": "intent-1", "confirmation_token": "token-1", "idempotency_key": "key-1"},
+            "confirm": lambda self, **kwargs: {"status": "executed"},
+        })())
+
+        @tool(name="students.create", description="Create", input_schema={"type": "object"}, permission=Permission.WRITE, write=True, requires_confirmation=True)
+        def create(*, context, name):
+            return {"name": name}
+
+        registry.register(create)
+        class WriteProvider:
+            name = "fake"
+
+            async def complete(self, **kwargs):
+                return _write_response()
+
+        provider = WriteProvider()
+        result = asyncio.run(AgentService(provider, registry).respond(
+            conversation=Conversation(), prompt="Crea Ana",
+            context=RequestContext("u", "o", "p", frozenset({"write"}), scopes=frozenset({"mcp:write"}), oauth_client_id="internal"), model="test"))
+        self.assertEqual(result.confirmation["intent_id"], "intent-1")
+        self.assertEqual(result.confirmation["confirmation_token"], "token-1")
+
     def test_agent_routes_tools_and_captures_usage(self):
         registry = ToolRegistry()
 
@@ -72,3 +96,7 @@ class AgentTests(unittest.TestCase):
         result = asyncio.run(service.respond(conversation=Conversation(), prompt="Busca Ana", context=RequestContext("u", "o", "p", frozenset({"read"})), model="test"))
         self.assertEqual(result.content, "Respuesta con datos.")
         self.assertEqual(provider.seen_tools[0], ["ballet_alumnas_search"])
+
+
+def _write_response():
+    return ProviderResponse("", [{"id": "call-1", "name": "students_create", "arguments": '{"name":"Ana"}'}])

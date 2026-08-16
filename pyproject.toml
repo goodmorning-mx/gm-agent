@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gm-agent"
-version = "0.1.4"
+version = "0.1.5"
 description = "GoodMorning reusable agent backend"
 requires-python = ">=3.12"
-dependencies = ["fastapi>=0.115,<1", "pydantic>=2.7,<3", "openai>=1.50,<2", "gm-mcp>=0.1.0", "gm-billing>=0.1.0"]
+dependencies = ["fastapi>=0.115,<1", "pydantic>=2.7,<3", "openai>=1.50,<2", "gm-mcp>=0.3.1", "gm-billing>=0.1.0"]
 
 [tool.setuptools.packages.find]
 include = ["gm_agent*"]

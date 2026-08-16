@@ -20,6 +20,7 @@ class Message:
     name: str | None = None
     tool_calls: list[dict[str, Any]] | None = None
     provider_name: str | None = None
+    confirmation: dict[str, Any] | None = None
 
     def as_provider_message(self) -> dict[str, Any]:
         result: dict[str, Any] = {"role": self.role, "content": self.content}
@@ -45,7 +46,7 @@ class Conversation:
     messages: list[Message] = field(default_factory=list)
 
 
-Confirmation = Callable[[str, dict[str, Any]], Awaitable[bool]]
+Confirmation = Callable[[str, dict[str, Any]], Awaitable[bool | dict[str, Any]]]
 
 
 class AgentService:
@@ -80,11 +81,24 @@ class AgentService:
                 tool_call = ToolCall(registry_name, arguments)
                 result = await self.registry.invoke(tool_call, context)
                 if result.requires_confirmation:
-                    if self.confirmation is None or not await self.confirmation(tool_call.name, arguments):
-                        result = await self.registry.invoke(ToolCall(tool_call.name, arguments, confirmed=False), context)
+                    decision = False if self.confirmation is None else await self.confirmation(tool_call.name, arguments)
+                    if not decision:
+                        confirmation = {"tool": tool_call.name, "arguments": arguments}
+                        if isinstance(result.content, dict):
+                            confirmation.update(result.content)
                         conversation.messages.append(Message("tool", json.dumps({"status": "confirmation_required", "tool": tool_call.name}), tool_call_id=call["id"], name=tool_call.name, provider_name=call["name"]))
-                        continue
-                    result = await self.registry.invoke(ToolCall(tool_call.name, arguments, confirmed=True), context)
+                        return Message("assistant", "", confirmation=confirmation)
+                    if isinstance(decision, dict):
+                        result = await self.registry.invoke(ToolCall(
+                            tool_call.name,
+                            arguments,
+                            confirmed=True,
+                            intent_id=decision.get("intent_id"),
+                            confirmation_token=decision.get("confirmation_token"),
+                            idempotency_key=decision.get("idempotency_key"),
+                        ), context)
+                    else:
+                        result = await self.registry.invoke(ToolCall(tool_call.name, arguments, confirmed=True), context)
                 conversation.messages.append(Message("tool", json.dumps(result.content, default=str), tool_call_id=call["id"], name=tool_call.name, provider_name=call["name"]))
         raise RuntimeError("Agent tool-call limit exceeded")
 
