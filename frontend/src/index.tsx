@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 
-export type AgentConfirmation = { tool: string; arguments: Record<string, unknown> }
+export type AgentConfirmation = { tool: string; arguments: Record<string, unknown>; intent_id?: string; confirmation_token?: string; idempotency_key?: string; expires_at?: string; status?: string }
 export type AgentMessage = { role: 'user' | 'assistant' | 'tool'; content: string; pending?: boolean; error?: boolean; confirmation?: AgentConfirmation }
 export type AgentResponse = { conversationId: string; content?: string; confirmation?: AgentConfirmation }
 export type AgentClient = (prompt: string, conversationId?: string, confirmation?: AgentConfirmation) => Promise<AgentResponse>
