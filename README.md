@@ -13,7 +13,8 @@ shells can provide product branding without copying chat logic.
 
 ```bash
 pip install gm-agent
-cd frontend && npm install && npm run build
+npm --prefix frontend ci
+npm run build
 ```
 
 The module contract declares `OPENAI_API_KEY` as a
