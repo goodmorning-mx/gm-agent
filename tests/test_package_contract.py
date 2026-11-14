@@ -15,7 +15,13 @@ class PackageContractTests(unittest.TestCase):
             json.loads((ROOT / "frontend/package.json").read_text())["version"],
             json.loads((ROOT / "goodmorning.module.json").read_text())["version"],
         ]
-        self.assertEqual(versions, ["0.1.6"] * 4)
+        self.assertEqual(versions, ["0.1.7"] * 4)
+
+    def test_confirmation_ui_displays_preview_before_mutation(self):
+        source = (ROOT / "frontend/src/index.tsx").read_text()
+        self.assertIn("message.confirmation.summary", source)
+        self.assertIn("message.confirmation.details", source)
+        self.assertIn("Confirmar y ejecutar", source)
 
 
 if __name__ == "__main__":
