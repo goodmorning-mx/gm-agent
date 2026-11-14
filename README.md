@@ -7,7 +7,7 @@ confirmation gates, and usage capture through `gm-billing`. Products pass their
 existing `ToolRegistry` adapters and services; no product business logic lives
 here.
 
-The React package exports `AgentChat` and `AgentLauncher`. It is intentionally
+The React package exports `AgentChat`, `AgentLauncher`, and `clearAgentChat`. It is intentionally
 unstyled and responsive by default so desktop, PWA, mobile, keyboard and touch
 shells can provide product branding without copying chat logic.
 
