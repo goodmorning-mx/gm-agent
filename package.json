@@ -1,6 +1,6 @@
 {
   "name": "@goodmorning/gm-agent",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Reusable GoodMorning agent React components",
   "type": "module",
   "main": "frontend/dist/index.js",

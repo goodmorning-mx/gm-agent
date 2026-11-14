@@ -1,11 +1,12 @@
 {
   "name": "@goodmorning/gm-agent",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc --declaration --emitDeclarationOnly && tsc --module ES2022 --outDir dist"
+    "build": "tsc --declaration --emitDeclarationOnly && tsc --module ES2022 --outDir dist",
+    "test": "npm run build && node --test tests/*.test.mjs"
   },
   "peerDependencies": {
     "react": ">=18",
