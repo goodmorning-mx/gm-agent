@@ -11,6 +11,11 @@ The React package exports `AgentChat` and `AgentLauncher`. It is intentionally
 unstyled and responsive by default so desktop, PWA, mobile, keyboard and touch
 shells can provide product branding without copying chat logic.
 
+When a write tool requires confirmation, the server can include a human-readable
+`summary` and `details` with the confirmation payload. `AgentChat` displays that
+preview next to the confirmation button before calling the client again. Never
+put confirmation tokens in the displayed summary or details.
+
 ```bash
 pip install gm-agent
 npm --prefix frontend ci

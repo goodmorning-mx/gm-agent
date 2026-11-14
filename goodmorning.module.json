@@ -1,6 +1,6 @@
 {
   "name": "gm-agent",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "required_secrets": {
     "OPENAI_API_KEY": {
       "source": "GOODMORNING_MANAGED",
@@ -11,14 +11,20 @@
   "kind": "full-stack",
   "backend_package": "gm-agent",
   "frontend_package": "@goodmorning/gm-agent",
-  "deployment_modes": ["embedded", "service", "gateway"],
+  "deployment_modes": [
+    "embedded",
+    "service",
+    "gateway"
+  ],
   "default_deployment_mode": "embedded",
   "resource_requirements": [
     {
       "name": "agent-gateway",
       "kind": "gateway",
       "resource_name": "agent-gateway",
-      "deployment_modes": ["gateway"],
+      "deployment_modes": [
+        "gateway"
+      ],
       "base_directory": "/backend",
       "dockerfile": "/Dockerfile",
       "port": 8100,
